@@ -1,0 +1,90 @@
+# Base PostgreSQL "postgres-reservations" : script SQL joué au premier démarrage (comme docker-entrypoint-initdb.d en compose)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-reservations-init
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS reservations (
+      id SERIAL PRIMARY KEY,
+      hotel_id INT NOT NULL,
+      room_id INT NOT NULL,
+      customer_name VARCHAR(120) NOT NULL,
+      customer_email VARCHAR(160),
+      check_in DATE NOT NULL,
+      check_out DATE NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CHECK (check_out > check_in)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_res_room_dates ON reservations (room_id, check_in, check_out);
+    CREATE INDEX IF NOT EXISTS idx_res_hotel_dates ON reservations (hotel_id, check_in, check_out);
+
+    INSERT INTO reservations (hotel_id, room_id, customer_name, customer_email, check_in, check_out) VALUES
+    (1, 1, 'Jean Dupont', 'jean.dupont@example.com', CURRENT_DATE + INTERVAL '3 days', CURRENT_DATE + INTERVAL '6 days'),
+    (2, 5, 'Marie Curie', 'marie.curie@example.com', CURRENT_DATE + INTERVAL '10 days', CURRENT_DATE + INTERVAL '14 days'),
+    (3, 8, 'Paul Martin', 'paul.martin@example.com', CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE + INTERVAL '5 days');
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-reservations
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  selector:
+    app: postgres-reservations
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-reservations
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  serviceName: postgres-reservations
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-reservations
+  template:
+    metadata:
+      labels:
+        app: postgres-reservations
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          envFrom:
+            - secretRef:
+                name: postgres-reservations
+          ports:
+            - containerPort: 5432
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "reservations", "-d", "reservations"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: init
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+      volumes:
+        - name: init
+          configMap:
+            name: postgres-reservations-init
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

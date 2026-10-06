@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hotels-service
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  type: ClusterIP
+  selector:
+    app: hotels-service
+  ports:
+    - port: 3001
+      targetPort: 3001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hotels-service
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hotels-service
+  template:
+    metadata:
+      labels:
+        app: hotels-service
+    spec:
+      containers:
+        - name: hotels-service
+          image: staybook-hotels-service:v1
+          ports:
+            - containerPort: 3001
+          env:
+            - name: DB_HOST
+              value: "postgres-hotels"
+            - name: DB_USER
+              value: "hotels"
+            - name: DB_PASSWORD
+              value: "hotels"
+            - name: DB_NAME
+              value: "hotels"
+            - name: PORT
+              value: "3001"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi

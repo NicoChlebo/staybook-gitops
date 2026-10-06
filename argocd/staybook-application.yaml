@@ -1,0 +1,18 @@
+# Application Argo CD "staybook" : le site, l'API et les bases.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: staybook
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/<VOTRE-LOGIN>/staybook-gitops.git   # À COMPLÉTER
+    targetRevision: HEAD
+    path: apps/staybook
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: staybook
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

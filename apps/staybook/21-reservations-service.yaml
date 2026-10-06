@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: reservations-service
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  type: ClusterIP
+  selector:
+    app: reservations-service
+  ports:
+    - port: 3002
+      targetPort: 3002
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reservations-service
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reservations-service
+  template:
+    metadata:
+      labels:
+        app: reservations-service
+    spec:
+      containers:
+        - name: reservations-service
+          image: staybook-reservations-service:v1
+          ports:
+            - containerPort: 3002
+          env:
+            - name: DB_HOST
+              value: "postgres-reservations"
+            - name: DB_USER
+              value: "reservations"
+            - name: DB_PASSWORD
+              value: "reservations"
+            - name: DB_NAME
+              value: "reservations"
+            - name: HOTELS_URL
+              value: "http://hotels-service:3001"
+            - name: PORT
+              value: "3002"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi

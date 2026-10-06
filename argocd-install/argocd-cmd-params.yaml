@@ -1,0 +1,7 @@
+# Patch : accepter le HTTP (pas de TLS en local)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cmd-params-cm
+data:
+  server.insecure: "true"

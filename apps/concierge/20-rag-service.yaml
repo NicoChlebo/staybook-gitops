@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-service
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  type: ClusterIP
+  selector:
+    app: rag-service
+  ports:
+    - port: 3003
+      targetPort: 3003
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-service
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rag-service
+  template:
+    metadata:
+      labels:
+        app: rag-service
+    spec:
+      initContainers:
+        # Kubernetes n'a pas de depends_on : on attend explicitement Ollama et Qdrant
+        - name: wait-for-ollama
+          image: busybox:1.36
+          command: ["sh", "-c", "until wget -qO- http://ollama:11434/api/tags >/dev/null 2>&1; do echo 'ollama pas prêt'; sleep 3; done"]
+        - name: wait-for-qdrant
+          image: busybox:1.36
+          command: ["sh", "-c", "until wget -qO- http://qdrant:6333/readyz >/dev/null 2>&1; do echo 'qdrant pas prêt'; sleep 3; done"]
+      containers:
+        - name: rag-service
+          image: staybook-rag-service:v1
+          ports:
+            - containerPort: 3003
+          env:
+            - name: OLLAMA_URL
+              value: "http://ollama:11434"
+            - name: QDRANT_URL
+              value: "http://qdrant:6333"
+            - name: HOTELS_URL
+              value: "http://hotels-service:3001"
+            - name: RESERVATIONS_URL
+              value: "http://reservations-service:3002"
+            - name: PORT
+              value: "3003"
+            - name: EMBED_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: concierge-config
+                  key: EMBED_MODEL
+            - name: LLM_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: concierge-config
+                  key: LLM_MODEL
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3003
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 512Mi

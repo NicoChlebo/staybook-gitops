@@ -1,0 +1,19 @@
+# Application Argo CD "concierge" : l'IA métier (Ollama, Qdrant, rag-service).
+# Même namespace que staybook : les services doivent se voir par leur nom DNS.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: concierge
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/<VOTRE-LOGIN>/staybook-gitops.git   # À COMPLÉTER
+    targetRevision: HEAD
+    path: apps/concierge
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: staybook
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

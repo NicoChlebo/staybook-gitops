@@ -1,0 +1,7 @@
+# Patch : exposer l'interface web en NodePort 30080 (redirigé vers localhost:8080 par kind)
+- op: replace
+  path: /spec/type
+  value: NodePort
+- op: add
+  path: /spec/ports/0/nodePort
+  value: 30080
