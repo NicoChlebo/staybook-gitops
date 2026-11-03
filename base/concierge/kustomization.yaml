@@ -1,0 +1,9 @@
+# Concierge IA (Ollama, Qdrant, rag-service) : déployé une seule fois, partagé par dev et prod.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: concierge
+resources:
+  - 00-config.yaml
+  - 10-qdrant.yaml
+  - 11-ollama.yaml
+  - 20-rag-service.yaml

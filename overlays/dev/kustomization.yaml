@@ -1,0 +1,10 @@
+# Environnement de développement : la base telle quelle, dans le namespace staybook-dev.
+# C'est ici que la CI (partie 4) viendra changer l'image du front.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: staybook-dev
+resources:
+  - ../../base/staybook
+images:
+  - name: staybook-front
+    newTag: v1

@@ -1,0 +1,23 @@
+# Le concierge IA, partagé : un seul Ollama pour dev et prod, dans son propre namespace.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: concierge
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io   # supprimer l'Application supprime aussi ses ressources
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/NicoChlebo/staybook-gitops.git   # À COMPLÉTER
+    targetRevision: HEAD
+    path: base/concierge
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: concierge
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

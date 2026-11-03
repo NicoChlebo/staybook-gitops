@@ -38,8 +38,8 @@ spec:
               value: "http://hotels-service:3001"
             - name: RESERVATIONS_URL
               value: "http://reservations-service:3002"
-            - name: RAG_URL
-              value: "http://rag-service:3003"
+            - name: RAG_URL      # le concierge est partagé, dans son propre namespace : nom DNS complet
+              value: "http://rag-service.concierge.svc.cluster.local:3003"
             - name: PORT
               value: "3000"
           readinessProbe:

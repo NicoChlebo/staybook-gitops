@@ -39,7 +39,10 @@ spec:
             - name: DB_USER
               value: "reservations"
             - name: DB_PASSWORD
-              value: "reservations"
+              valueFrom:              # TP 2 : plus de mot de passe en clair dans le Deployment
+                secretKeyRef:
+                  name: postgres-reservations
+                  key: POSTGRES_PASSWORD
             - name: DB_NAME
               value: "reservations"
             - name: HOTELS_URL

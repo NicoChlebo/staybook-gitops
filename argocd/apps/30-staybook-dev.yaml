@@ -1,0 +1,23 @@
+# StayBook dev : overlays/dev, namespace staybook-dev. La CI met à jour overlays/dev automatiquement.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: staybook-dev
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io   # supprimer l'Application supprime aussi ses ressources
+spec:
+  project: staybook-dev
+  source:
+    repoURL: https://github.com/NicoChlebo/staybook-gitops.git   # À COMPLÉTER
+    targetRevision: HEAD
+    path: overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: staybook-dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

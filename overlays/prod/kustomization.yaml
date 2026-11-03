@@ -1,0 +1,23 @@
+# Environnement de production : même base, namespace staybook-prod, plus de réplicas, autre port.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: staybook-prod
+resources:
+  - ../../base/staybook
+images:
+  - name: staybook-front
+    newTag: v1
+patches:
+  - path: front-nodeport.yaml
+    target:
+      kind: Service
+      name: front
+replicas:
+  - name: front
+    count: 2
+  - name: gateway
+    count: 2
+  - name: hotels-service
+    count: 2
+  - name: reservations-service
+    count: 2

@@ -1,0 +1,4 @@
+# Patch : en prod, le front écoute sur le NodePort 30082 (redirigé vers localhost:8082 par kind)
+- op: replace
+  path: /spec/ports/0/nodePort
+  value: 30082

@@ -46,10 +46,10 @@ spec:
               value: "http://ollama:11434"
             - name: QDRANT_URL
               value: "http://qdrant:6333"
-            - name: HOTELS_URL
-              value: "http://hotels-service:3001"
+            - name: HOTELS_URL          # le concierge indexe les hôtels de prod (autre namespace : FQDN)
+              value: "http://hotels-service.staybook-prod.svc.cluster.local:3001"
             - name: RESERVATIONS_URL
-              value: "http://reservations-service:3002"
+              value: "http://reservations-service.staybook-prod.svc.cluster.local:3002"
             - name: PORT
               value: "3003"
             - name: EMBED_MODEL

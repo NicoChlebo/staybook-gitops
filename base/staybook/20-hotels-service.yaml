@@ -19,7 +19,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: hotels-service
@@ -39,7 +39,10 @@ spec:
             - name: DB_USER
               value: "hotels"
             - name: DB_PASSWORD
-              value: "hotels"
+              valueFrom:              # TP 2 : plus de mot de passe en clair dans le Deployment
+                secretKeyRef:
+                  name: postgres-hotels
+                  key: POSTGRES_PASSWORD
             - name: DB_NAME
               value: "hotels"
             - name: PORT
