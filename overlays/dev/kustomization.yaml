@@ -9,4 +9,4 @@ resources:
 images:
 - name: staybook-front
   newName: ghcr.io/nicochlebo/staybook-front
-  newTag: sha-edf0d03
+  newTag: sha-da3e377
