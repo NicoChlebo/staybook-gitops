@@ -1,7 +1,7 @@
 # Réponses — TP Migrer StayBook vers Kubernetes avec Argo CD
 
 **Nom(s) :** 
-**Dépôt GitHub :**  
+**Dépôt GitHub :** https://github.com/NicoChlebo/staybook-gitops.git  
 
 
 ## Étape 1 — Docker Compose : le point de départ
@@ -418,7 +418,13 @@ _Reliez chaque entrée de `argocd app history staybook` à un commit de `git log
 
 Réponse :
 
-- **Correspondance** : Chaque ID de synchronisation dans Argo CD correspond au hash du commit Git déployé (v1, scale, auto-sync, front v2, test prune, test panne v3, revert).
+- **Correspondance** :
+  - **ID 0** (`d90be66`) : `feat: StayBook manifests + Argo CD install (v1)`
+  - **ID 1** (`7aeb6db`) : `chore: scale hotels-service to 2 replicas`
+  - **ID 2** (`de40066`) : `feat: enable automated sync (prune and selfHeal)`
+  - **ID 3** (`0b257a1`) : `feat: bump front to v2`
+  - **ID 4** (`b8fd586`) : `feat: bump front to v3 (broken)`
+  - **ID 5** (`6fbee59`) : `Revert "feat: bump front to v3 (broken)"`
 - **Réponse à l'auditeur** : En **2 commandes** :
   1. `argocd app history staybook` (affiche la date de déploiement et le hash du commit).
   2. `git show <commit-hash>` (affiche l'auteur, la date et le détail exact des changements).
@@ -429,20 +435,23 @@ Réponse :
 - Sortie de `argocd app history staybook` :
 
 ```text
-ID  DATE                           REVISION  SYNC STATUS
-1   2026-10-06 10:15:32 +0200 CEST  a1b2c3d   Synced
-2   2026-10-06 10:25:48 +0200 CEST  b2c3d4e   Synced
-3   2026-10-06 10:32:10 +0200 CEST  c3d4e5f   Synced
-4   2026-10-06 10:41:22 +0200 CEST  d4e5f6a   Synced
-5   2026-10-06 10:48:05 +0200 CEST  e5f6a1b   Synced
-6   2026-10-06 10:52:14 +0200 CEST  f6a1b2c   Synced
-7   2026-10-06 10:55:40 +0200 CEST  a7b8c9d   Synced
+SOURCE  https://github.com/NicoChlebo/staybook-gitops
+ID      DATE                            REVISION
+0       2026-10-06 12:46:43 +0200 CEST  HEAD (d90be66)
+1       2026-11-03 10:04:47 +0100 CET   HEAD (7aeb6db)
+
+SOURCE  https://github.com/NicoChlebo/staybook-gitops.git
+ID      DATE                           REVISION
+2       2026-11-03 10:12:29 +0100 CET  HEAD (de40066)
+3       2026-11-03 10:19:25 +0100 CET  HEAD (0b257a1)
+4       2026-11-03 10:24:13 +0100 CET  HEAD (b8fd586)
+5       2026-11-03 10:26:49 +0100 CET  HEAD (6fbee59)
 ```
 
 - Sortie de `argocd app list` :
 
 ```text
-NAME       CLUSTER                         NAMESPACE  PROJECT  STATUS  HEALTH   SYNCPOLICY  CONDITIONS  REPO                                                  PATH
-concierge  https://kubernetes.default.svc  staybook   default  Synced  Healthy  Auto-Prune  <none>      https://github.com/<votre-login>/staybook-gitops.git  apps/concierge
-staybook   https://kubernetes.default.svc  staybook   default  Synced  Healthy  Auto-Prune  <none>      https://github.com/<votre-login>/staybook-gitops.git  apps/staybook
+NAME              CLUSTER                         NAMESPACE  PROJECT  STATUS  HEALTH   SYNCPOLICY  CONDITIONS  REPO                                               PATH            TARGET
+argocd/concierge  https://kubernetes.default.svc  staybook   default  Synced  Healthy  Auto-Prune  <none>      https://github.com/NicoChlebo/staybook-gitops.git  apps/concierge  HEAD
+argocd/staybook   https://kubernetes.default.svc  staybook   default  Synced  Healthy  Auto-Prune  <none>      https://github.com/NicoChlebo/staybook-gitops.git  apps/staybook   HEAD
 ```
