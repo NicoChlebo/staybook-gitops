@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: staybook-prod
 resources:
   - ../../base/staybook
+  - sealed-secrets.yaml
 images:
   - name: staybook-front
     newTag: v1
