@@ -4,8 +4,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: staybook-dev
 resources:
-  - ../../base/staybook
-  - sealed-secrets.yaml
+- ../../base/staybook
+- sealed-secrets.yaml
 images:
-  - name: staybook-front
-    newTag: v1
+- name: staybook-front
+  newName: ghcr.io/nicochlebo/staybook-front
+  newTag: sha-edf0d03
